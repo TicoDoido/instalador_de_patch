@@ -1,13 +1,9 @@
 ✨ Recursos Destacados  
 
 ✅ Empacotamento de múltiplos patches em único executável  
-  
 🎨 Personalização completa da interface (banners/ícones)  
-  
 📁 Geração automática de estrutura de diretórios  
-  
 🖥️ Interface gráfica amigável (tkinter)  
-  
 🚀 Compilação para .exe (Windows)  
   
 📦 Requisitos do Sistema  
