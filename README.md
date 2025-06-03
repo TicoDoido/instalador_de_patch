@@ -14,7 +14,11 @@ Sistema	Windows 10	Windows 11
 🚀 Começando Rápido  
 Pré-requisitos  
 
+instale os módulos necessários  
+
 pip install pyinstaller  
+pip install bsfdiff4  
+
 Configuração Inicial  
 Clone o repositório:  
   
