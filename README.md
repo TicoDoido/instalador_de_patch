@@ -1,4 +1,5 @@
 ✨ Recursos Destacados  
+
 ✅ Empacotamento de múltiplos patches em único executável  
   
 🎨 Personalização completa da interface (banners/ícones)  
