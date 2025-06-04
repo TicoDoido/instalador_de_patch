@@ -7,11 +7,12 @@
 🚀 Compilação para .exe (Windows)  
   
 📦 Requisitos do Sistema  
-Componente	Versão Mínima	Recomendada  
-Python	3.6	3.10+  
-PyInstaller	-	5.8+  
+Componente	\ Versão Mínima	Recomendada  
+Python	\ 3.6	3.10+  
+PyInstaller	\ 5.8+  
 Sistema	Windows 10	Windows 11  
-🚀 Começando Rápido  
+
+# 🚀 Começando Rápido  
 Pré-requisitos  
 
 instale os módulos necessários  
