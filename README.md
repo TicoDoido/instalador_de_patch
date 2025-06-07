@@ -6,13 +6,13 @@
 🖥️ Interface gráfica amigável (tkinter)  
 🚀 Compilação para .exe (Windows)  
 
-# COMO FUNCIONA:
-Use o CRIAR.py para criar o patch, ele vai gerar um delta unico 
-comparando os arquivos de uma pasta de um jogo com tudo original 
-e outra pasta (a mesma) porem com os arquivos que foram alterados 
-Arquivos adicionados também serão incluídos no patch
-Altere o banner.png o icon.ico e os textos dentro do instalador.py
-para personalizar de acordo com o seu projeto 
+# COMO FUNCIONA:  
+Use o CRIAR.py para criar o patch, ele vai gerar um delta unico   
+comparando os arquivos de uma pasta de um jogo com tudo original   
+e outra pasta (a mesma) porem com os arquivos que foram alterados   
+Arquivos adicionados também serão incluídos no patch  
+Altere o banner.png o icon.ico e os textos dentro do instalador.py  
+para personalizar de acordo com o seu projeto   
   
 📦 Requisitos do Sistema  
 Componente	\ Versão Mínima	Recomendada  
