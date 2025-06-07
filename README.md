@@ -47,7 +47,7 @@ instalador_de_patch/
 ├── 📄 CRIAR.py                # Script de construção  
 ├── 📄 COMPILAR.bat            # Script de compilação  
 ├── 🖼️ banner.png              # Banner personalizável  
-├── 🎯 icon.ico                # Ícone do aplicativo  
+├── 🎯 icon.ico                # Ícone personalizável  
 └── 📄 instalador.py           # Lógica principal  
 
 🧪 Testando e Contribuindo  
