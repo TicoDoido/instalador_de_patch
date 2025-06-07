@@ -22,9 +22,43 @@ def resource_path(relative_path):
 class InstallerApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Instalador da Tradução - Plants Vs Zombies GOTY Steam")
-        self.geometry("700x450")  # Altura reduzida para melhor acomodar o banner
+        
+        # Configurar temas
+        self.themes = {
+            "dark": {
+                "bg": "#1e1e1e",
+                "fg": "#e0e0e0",
+                "accent": "#2c2c2c",
+                "highlight": "#3498db",
+                "success": "#2ecc71",
+                "error": "#e74c3c",
+                "text": "#b0b0b0"
+            },
+            "light": {
+                "bg": "#f0f0f0",
+                "fg": "#000000",
+                "accent": "#e0e0e0",
+                "highlight": "#1e90ff",
+                "success": "#228B22",
+                "error": "#B22222",
+                "text": "#404040"
+            }
+        }
+        self.current_theme = "dark"  # Tema inicial
+        self.colors = self.themes[self.current_theme]
+        
+        self.title("Instalador da Tradução - Shadows of the Damned: Hella Remastered")
+        self.geometry("700x450")
         self.resizable(False, False)
+        self.configure(bg=self.colors["bg"])
+        
+        # Frame do cabeçalho (header)
+        self.header_frame = ttk.Frame(self)
+        self.header_frame.pack(side='top', fill='x')
+        
+        # Configurar estilo
+        self.setup_styles()
+        
         self.frames = []
         self.selected_dir = tk.StringVar()
         self.checkbox_state = tk.StringVar(value="")
@@ -44,12 +78,127 @@ class InstallerApp(tk.Tk):
         self.banner_width = 200
         self.banner_height = 450
         self.load_banner_image()
+        self.theme_button = ttk.Button(command=self.toggle_theme)
 
         # Detectar caminho de instalação
         self.detect_install_path()
 
         self.create_pages()
         self.show_frame(0)
+
+    def toggle_theme(self):
+        """Alterna entre temas claro e escuro"""
+        new_theme = "light" if self.current_theme == "dark" else "dark"
+        self.change_theme(new_theme)
+
+    def change_theme(self, theme_name):
+        """Altera o tema da interface"""
+        self.current_theme = theme_name
+        self.colors = self.themes[theme_name]
+        
+        # Reconfigurar a janela principal
+        self.configure(bg=self.colors["bg"])
+        self.setup_styles()
+        self.update_widget_colors()
+
+    def update_widget_colors(self):
+        """Atualiza as cores de todos os widgets"""
+        # Atualizar cores dos widgets não-ttk
+        for widget in self.winfo_children():
+            self.update_widget_recursive(widget)
+        
+        # Atualizar frames
+        for frame in self.frames:
+            frame.configure(style='TFrame')
+            self.update_widget_recursive(frame)
+
+    def update_widget_recursive(self, widget):
+        """Atualiza recursivamente as cores dos widgets"""
+        try:
+            if isinstance(widget, (tk.Frame, tk.Label, tk.Button, tk.Entry, tk.Text)):
+                widget.config(bg=self.colors["bg"])
+                if hasattr(widget, 'fg') and 'fg' in widget.keys():
+                    widget.config(fg=self.colors["fg"])
+            
+            if isinstance(widget, tk.Label):
+                widget.config(bg=self.colors["bg"], fg=self.colors["fg"])
+                
+            if isinstance(widget, tk.Button):
+                widget.config(bg=self.colors["accent"], fg=self.colors["fg"],
+                              activebackground=self.colors["highlight"])
+            
+            if isinstance(widget, tk.Entry):
+                widget.config(bg=self.colors["accent"], fg=self.colors["fg"],
+                              insertbackground=self.colors["fg"])
+                
+            if isinstance(widget, tk.Checkbutton) or isinstance(widget, tk.Radiobutton):
+                widget.config(bg=self.colors["bg"], fg=self.colors["fg"],
+                              selectcolor=self.colors["bg"])
+                
+        except Exception:
+            pass
+        
+        # Atualizar filhos
+        for child in widget.winfo_children():
+            self.update_widget_recursive(child)
+
+    def setup_styles(self):
+        """Configura os estilos para o tema atual"""
+        style = ttk.Style(self)
+        style.theme_use('clam')
+        
+        # Configurações gerais
+        style.configure('.', 
+                        background=self.colors["bg"],
+                        foreground=self.colors["fg"],
+                        fieldbackground=self.colors["accent"],
+                        selectbackground=self.colors["highlight"],
+                        selectforeground=self.colors["fg"],
+                        troughcolor=self.colors["accent"],
+                        highlightcolor=self.colors["highlight"],
+                        insertcolor=self.colors["fg"])
+        
+        # Frames
+        style.configure('TFrame', background=self.colors["bg"])
+        style.configure('Dark.TFrame', background=self.colors["accent"])
+        
+        # Labels
+        style.configure('TLabel', background=self.colors["bg"], foreground=self.colors["fg"])
+        style.configure('Title.TLabel', font=('Segoe UI', 16, 'bold'))
+        style.configure('Subtitle.TLabel', font=('Segoe UI', 12))
+        style.configure('Info.TLabel', foreground=self.colors["text"])
+        
+        # Botões
+        style.configure('TButton', 
+                        background=self.colors["accent"],
+                        foreground=self.colors["fg"],
+                        borderwidth=1,
+                        focusthickness=0,
+                        focuscolor='none')
+        style.map('TButton',
+                  background=[('active', self.colors["highlight"]), ('disabled', '#333333')],
+                  foreground=[('active', 'white'), ('disabled', '#7f8c8d')])
+        
+        # Entradas
+        style.configure('TEntry', 
+                        fieldbackground=self.colors["accent"],
+                        foreground=self.colors["fg"],
+                        insertcolor=self.colors["fg"],
+                        bordercolor=self.colors["accent"],
+                        lightcolor=self.colors["accent"],
+                        darkcolor=self.colors["accent"])
+        
+        # Checkbuttons e Radiobuttons
+        style.configure('TCheckbutton', background=self.colors["bg"], foreground=self.colors["fg"])
+        style.configure('TRadiobutton', background=self.colors["bg"], foreground=self.colors["fg"])
+        
+        # Barra de progresso
+        style.configure('Horizontal.TProgressbar', 
+                        background=self.colors["highlight"],
+                        troughcolor=self.colors["accent"],
+                        bordercolor=self.colors["accent"],
+                        lightcolor=self.colors["highlight"],
+                        darkcolor=self.colors["highlight"])
 
     def set_window_icon(self):
         try:
@@ -62,38 +211,37 @@ class InstallerApp(tk.Tk):
     def detect_install_path(self):
         """Detecta o caminho de instalação do jogo"""
         possible_paths = [
-            r"C:\Program Files (x86)\Steam\steamapps\common\Plants Vs Zombies",
-            r"D:\Program Files (x86)\Steam\steamapps\common\Plants Vs Zombies",
-            r"E:\Program Files (x86)\Steam\steamapps\common\Plants Vs Zombies",
+            r"C:\Program Files (x86)\Steam\steamapps\common\Shadows of the Damned Hella Remastered",
+            r"D:\Program Files (x86)\Steam\steamapps\common\Shadows of the Damned Hella Remastered",
+            r"E:\Program Files (x86)\Steam\steamapps\common\Shadows of the Damned Hella Remastered",
         ]
 
         try:
             with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Valve\Steam") as key:
                 steam_path, _ = winreg.QueryValueEx(key, "InstallPath")
-                custom_path = os.path.join(steam_path, "steamapps", "common", "Plants Vs Zombies")
+                custom_path = os.path.join(steam_path, "steamapps", "common", "Shadows of the Damned Hella Remastered")
                 possible_paths.insert(0, custom_path)
         except Exception:
             pass
 
         for path in possible_paths:
-            exe_path = os.path.join(path, "PlantsVsZombies.exe")
+            exe_path = os.path.join(path, "game.exe")
             if os.path.exists(exe_path):
                 self.selected_dir.set(path)
                 return
 
-        self.selected_dir.set(r"C:\Program Files (x86)\Steam\steamapps\common\Plants Vs Zombies")
+        self.selected_dir.set(r"C:\Program Files (x86)\Steam\steamapps\common\Shadows of the Damned Hella Remastered")
 
     def load_banner_image(self):
         try:
             image_path = resource_path("banner.png")
             img = Image.open(image_path)
-            
-            # Redimensionar exatamente para 200x400
             img = img.resize((self.banner_width, self.banner_height), Image.LANCZOS)
             self.banner_image = ImageTk.PhotoImage(img)
         except Exception:
-            # Fallback: criar uma imagem sólida com as dimensões especificadas
-            self.banner_image = ImageTk.PhotoImage(Image.new("RGB", (self.banner_width, self.banner_height), "#2c3e50"))
+            # Criar banner padrão com tema escuro
+            img = Image.new("RGB", (self.banner_width, self.banner_height), self.colors["bg"])
+            self.banner_image = ImageTk.PhotoImage(img)
 
     def create_pages(self):
         self.frames.append(self.create_intro_page())
@@ -133,7 +281,7 @@ class InstallerApp(tk.Tk):
             )
 
     def create_intro_page(self):
-        frame = ttk.Frame(self)
+        frame = ttk.Frame(self, style='TFrame')
 
         # Container principal para banner e conteúdo
         main_container = ttk.Frame(frame)
@@ -144,12 +292,12 @@ class InstallerApp(tk.Tk):
         banner_frame.pack(side='left', fill='y')
 
         # Adicionar a imagem do banner
-        banner_label = tk.Label(banner_frame, image=self.banner_image)
+        banner_label = tk.Label(banner_frame, image=self.banner_image, bg=self.colors["bg"])
         banner_label.pack(fill='both', expand=True)
 
         # Frame para o conteúdo (lado direito)
         content = ttk.Frame(main_container)
-        content.pack(side='left', expand=True, fill='both', padx=20, pady=10)  # Padding reduzido
+        content.pack(side='left', expand=True, fill='both', padx=20, pady=10)
 
         # Frame para centralizar conteúdo verticalmente
         content_container = ttk.Frame(content)
@@ -157,14 +305,15 @@ class InstallerApp(tk.Tk):
 
         ttk.Label(content_container,
                   text="Instalador da Tradução",
-                  font=("Helvetica", 18, "bold")).pack(anchor='w', pady=(0, 5))
+                  style='Title.TLabel').pack(anchor='w', pady=(0, 5))
         
         ttk.Label(content_container,
-                  text="Plants vs. Zombies GOTY \"Steam\"",
-                  font=("Helvetica", 16, "bold")).pack(anchor='w', pady=(0, 15))
+                  text="Shadows of the Damned: Hella Remastered",
+                  style='Subtitle.TLabel').pack(anchor='w', pady=(0, 15))
 
         ttk.Label(content_container,
                   text="Esta ferramenta irá guiá-lo através do processo de instalação da tradução.\n\nClique em 'Avançar' para continuar ou 'Cancelar' para fechar o instalador.",
+                  style='TLabel',
                   wraplength=450,
                   justify="left").pack(anchor='w', pady=(0, 30))
 
@@ -175,6 +324,11 @@ class InstallerApp(tk.Tk):
 
         btn_container = ttk.Frame(button_frame)
         btn_container.pack(side='right')
+        
+        ttk.Button(btn_container,
+                text="ESCURO\\CLARO",
+                command=self.toggle_theme).pack(side='left', padx=5)
+
 
         ttk.Button(btn_container,
                   text="Cancelar",
@@ -187,48 +341,53 @@ class InstallerApp(tk.Tk):
         return frame
 
     def create_info_page(self):
-        frame = ttk.Frame(self)
+        frame = ttk.Frame(self, style='TFrame')
 
         content = ttk.Frame(frame)
-        content.pack(fill='both', expand=True, padx=20, pady=15)  # Padding ajustado
+        content.pack(fill='both', expand=True, padx=20, pady=15)
 
         ttk.Label(content,
                   text="Informações Importantes",
-                  font=("Segoe UI", 14, "bold")).pack(anchor='w', pady=(0, 10))
+                  style='Title.TLabel').pack(anchor='w', pady=(0, 10))
 
         info_frame = ttk.Frame(content)
         info_frame.pack(fill='x', pady=(0, 15))
 
         info_text = (
-            "• Este instalador é para a versão \"Steam\" do Plants Vs Zombies GOTY Edition\n"
+            "• Este instalador é para a versão \"Steam\" do Shadows of the Damned: Hella Remastered\n"
             "• Feche o jogo antes de iniciar a instalação\n"
-            "• É recomendado fazer um backup dos arquivos originais\n"
-            "• A instalação aplicará um patch delta (data.patch) aos arquivos do jogo\n\n"
+            "• É recomendado fazer um backup dos arquivos originais\n\n"
             "Selecione o diretório de instalação do jogo:"
         )
         ttk.Label(info_frame,
                   text=info_text,
+                  style='TLabel',
                   wraplength=650,
                   justify="left").pack(anchor='w')
 
         dir_frame = ttk.Frame(content)
         dir_frame.pack(fill='x', pady=(0, 10))
 
-        ttk.Entry(dir_frame,
+        entry = ttk.Entry(dir_frame,
                   textvariable=self.selected_dir,
-                  width=60).pack(side='left', fill='x', expand=True)
+                  width=60)
+        entry.pack(side='left', fill='x', expand=True)
+        
+        # Configurar cor do texto para a entrada
+        entry.configure(style='TEntry')
+        
         ttk.Button(dir_frame,
                   text="Procurar",
                   command=self.browse_directory,
                   width=10).pack(side='left', padx=5)
 
-        self.path_status = ttk.Label(content, text="", foreground="red")
+        self.path_status = ttk.Label(content, text="", foreground=self.colors["error"])
         self.path_status.pack(anchor='w', pady=(0, 15))
         self.verify_path()
 
         ttk.Label(content,
                   text="Você concorda com os termos acima?",
-                  font=("Segoe UI", 9)).pack(anchor='w', pady=(0, 5))
+                  style='TLabel').pack(anchor='w', pady=(0, 5))
 
         terms_frame = ttk.Frame(content)
         terms_frame.pack(anchor='w', pady=(0, 15))
@@ -275,22 +434,22 @@ class InstallerApp(tk.Tk):
     def verify_path(self):
         path = self.selected_dir.get()
         if not path:
-            self.path_status.config(text="Selecione um diretório válido", foreground="red")
+            self.path_status.config(text="Selecione um diretório válido", foreground=self.colors["error"])
             return False
 
-        exe_path = os.path.join(path, "PlantsVsZombies.exe")
+        exe_path = os.path.join(path, "game.exe")
 
         if not os.path.exists(path):
-            self.path_status.config(text="Diretório não encontrado", foreground="red")
+            self.path_status.config(text="Diretório não encontrado", foreground=self.colors["error"])
             return False
         elif not os.path.exists(exe_path):
-            self.path_status.config(text="Executável do jogo não encontrado", foreground="red")
+            self.path_status.config(text="Executável do jogo não encontrado", foreground=self.colors["error"])
             return False
         elif not os.access(path, os.W_OK):
-            self.path_status.config(text="Sem permissão de escrita no diretório", foreground="red")
+            self.path_status.config(text="Sem permissão de escrita no diretório", foreground=self.colors["error"])
             return False
         else:
-            self.path_status.config(text="Caminho válido - Pronto para instalação", foreground="green")
+            self.path_status.config(text="Caminho válido - Pronto para instalação", foreground=self.colors["success"])
             return True
 
     def browse_directory(self):
@@ -306,32 +465,33 @@ class InstallerApp(tk.Tk):
             self.info_next_button.config(state='disabled')
 
     def create_credits_page(self):
-        frame = ttk.Frame(self)
+        frame = ttk.Frame(self, style='TFrame')
         
         content = ttk.Frame(frame)
-        content.pack(fill='both', expand=True, padx=20, pady=10)  # Padding ajustado
+        content.pack(fill='both', expand=True, padx=20, pady=10)
         
         ttk.Label(content, 
                  text="Créditos da Tradução", 
-                 font=("Segoe UI", 14, "bold")).pack(pady=(0, 10))
+                 style='Title.TLabel').pack(pady=(0, 10))
         
         ttk.Label(content, 
                  text="Esta tradução foi possível graças ao trabalho de:",
-                 font=("Segoe UI", 9)).pack(pady=(0, 10))
+                 style='TLabel').pack(pady=(0, 10))
         
-        border_frame = ttk.Frame(content, relief="solid", borderwidth=2)
+        # Frame com fundo mais escuro para os créditos
+        border_frame = ttk.Frame(content, style='Dark.TFrame', padding=5)
         border_frame.pack(fill='x', padx=15, pady=5)
         
-        credits_container = ttk.Frame(border_frame, padding=8)
-        credits_container.pack(fill='both', expand=True)
+        credits_container = ttk.Frame(border_frame)
+        credits_container.pack(fill='both', expand=True, padx=3, pady=3)
         
         credits = [
-            ("Tradução:", "Carlos Emmanuel, Heitor Spectre, Giga e Oficial"),
-            ("Revisão:", "Heitor Spectre e Carlos Emmanuel"),
-            ("Texturas:", "Niccbilac, Heitor Spectre, Kiel, Evil Trainer,"),
-            ("", "Carlos Emmanuel, João 13 e Oficial"),
-            ("Testes:", "Heitor Spectre e Carlos Emmanuel"),
-            ("Criadores do Instalador:", "Tico Doido, Niccbilac, Heitor Spectre")
+            ("Líder do Projeto:", "Giga"),
+            ("Tradução:", "Carlos Emmanuel, Niccbilac, Kiel e Giga"),
+            ("Revisão:", "Carlos Emmanuel e Niccbilac"),
+            ("Texturas:", "Evil Trainer e Giga"),
+            ("Testes:", "João13 e Giga"),
+            ("Criadores do Instalador:", "TicoDoido, Niccbilac, Heitor Spectre")
         ]
         
         for role, names in credits:
@@ -339,12 +499,12 @@ class InstallerApp(tk.Tk):
             credit_frame.pack(fill='x', padx=5, pady=2)
             
             title_label = ttk.Label(credit_frame, text=role, 
-                                  font=("Segoe UI", 10, "bold"),
+                                  style='TLabel',
                                   width=22, anchor='e')
             title_label.pack(side='left')
             
             names_label = ttk.Label(credit_frame, text=names, 
-                                   font=("Segoe UI", 10),
+                                   style='TLabel',
                                    anchor='w')
             names_label.pack(side='left', padx=5, fill='x', expand=True)
         
@@ -353,12 +513,12 @@ class InstallerApp(tk.Tk):
         
         ttk.Label(special_frame, 
                  text="Agradecimento Especial:", 
-                 font=("Segoe UI", 10, "bold"),
+                 style='TLabel',
                  width=22, anchor='e').pack(side='left')
                  
         ttk.Label(special_frame, 
-                 text="Tico Doido", 
-                 font=("Segoe UI", 10),
+                 text="Evil Trainer", 
+                 style='TLabel',
                  anchor='w').pack(side='left', padx=5, fill='x', expand=True)
         
         ttk.Frame(content).pack(fill='y', expand=True)
@@ -384,22 +544,22 @@ class InstallerApp(tk.Tk):
         return frame
 
     def create_install_page(self):
-        frame = ttk.Frame(self)
+        frame = ttk.Frame(self, style='TFrame')
 
         content = ttk.Frame(frame)
-        content.pack(fill='both', expand=True, padx=30, pady=15)  # Padding ajustado
+        content.pack(fill='both', expand=True, padx=30, pady=15)
 
         ttk.Label(content,
                   text="Instalação da Tradução",
-                  font=("Segoe UI", 16, "bold")).pack(pady=(5, 15))
+                  style='Title.TLabel').pack(pady=(5, 15))
 
         ttk.Label(content,
                   text="O instalador irá aplicar o patch de tradução aos arquivos do jogo.",
-                  font=("Segoe UI", 10)).pack(pady=(0, 5))
+                  style='Subtitle.TLabel').pack(pady=(0, 5))
         
         ttk.Label(content,
                   text="Por favor, não feche o programa durante o processo.",
-                  font=("Segoe UI", 9, "italic")).pack(pady=(0, 15))
+                  style='Info.TLabel').pack(pady=(0, 15))
 
         backup_frame = ttk.Frame(content)
         backup_frame.pack(fill='x', pady=(0, 15))
@@ -407,6 +567,7 @@ class InstallerApp(tk.Tk):
         ttk.Checkbutton(backup_frame, 
                        text="Deseja criar um backup dos arquivos originais antes de instalar? (Altamente recomendável)",
                        variable=self.backup_var,
+                       style='TCheckbutton',
                        onvalue=True,
                        offvalue=False).pack(anchor='w')
 
@@ -415,18 +576,13 @@ class InstallerApp(tk.Tk):
 
         self.status_label = ttk.Label(progress_frame,
                                       text="Pronto para iniciar a instalação",
-                                      font=("Segoe UI", 10))
+                                      style='TLabel')
         self.status_label.pack(anchor='w', pady=(0, 5))
-
-        s = ttk.Style()
-        s.theme_use('clam')
-        s.configure("green.Horizontal.TProgressbar", foreground='#2ecc71', background='#2ecc71')
         
         self.progress = ttk.Progressbar(progress_frame, 
                                       orient="horizontal", 
                                       length=500, 
-                                      mode="determinate",
-                                      style="green.Horizontal.TProgressbar")
+                                      mode="determinate")
         self.progress.pack(fill='x', pady=5)
 
         button_frame = ttk.Frame(content)
@@ -489,7 +645,6 @@ class InstallerApp(tk.Tk):
             
             if os.path.exists(src_path):
                 try:
-                    # Copia o arquivo ORIGINAL antes de qualquer modificação
                     shutil.copy2(src_path, dest_path)
                     backed_up_files += 1
                     
@@ -504,15 +659,13 @@ class InstallerApp(tk.Tk):
 
     def create_uninstaller(self, target_dir):
         """Cria o desinstalador em um local seguro (diretório do jogo)"""
-        # Usar o diretório do jogo em vez de Program Files
         uninstaller_dir = os.path.join(target_dir, "Central do PS3")
         os.makedirs(uninstaller_dir, exist_ok=True)
         
         uninstaller_path = os.path.join(uninstaller_dir, "desinstalar_traducao.bat")
         
-        # Script simplificado que opera apenas no diretório do jogo
-        script_content = f"""@echo off
-echo Desinstalando a tradução do Plants Vs Zombies...
+        script_content = """@echo off
+echo Desinstalando a tradução do Shadows of the Damned: Hella Remastered...
 echo.
 
 set "game_dir=%~dp0.."
@@ -531,8 +684,8 @@ xcopy /E /Y /I "backup" .
 echo Removendo arquivos de controle...
 del "install.log"
 
-echo Apagando a pasta de backup...
-rmdir /S /Q "backup"
+echo Removendo arquivos de tradução desnecessários...
+rmdir /S /Q "backup" 2>nul
 
 echo Desinstalação concluída com sucesso!
 echo O jogo foi restaurado para o estado original.
@@ -652,15 +805,11 @@ pause
                 f.write(f"Data da instalação: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
                 f.write(f"Diretório do jogo: {target_dir}\n")
             
-            # Criar desinstalador (com tratamento de erro)
+            # Criar desinstalador
             uninstaller_path = ""
             if backup_created:
                 try:
                     uninstaller_path = self.create_uninstaller(target_dir)
-                    if not uninstaller_path:
-                        messagebox.showwarning("Aviso", 
-                                             "O desinstalador não pôde ser criado, mas a instalação foi concluída.\n\n" 
-                                             "Você pode restaurar manualmente os arquivos usando a pasta 'backup'.")
                 except Exception as e:
                     messagebox.showwarning("Aviso", 
                                          f"O desinstalador não pôde ser criado: {str(e)}\n\n"
