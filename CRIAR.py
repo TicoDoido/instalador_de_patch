@@ -35,7 +35,7 @@ themes = {
     }
 }
 
-current_theme = "dark"  # Iniciar com o tema escuro
+current_theme = "dark"  # Tema inicial
 
 
 def apply_theme(root, elements):
@@ -56,7 +56,7 @@ def apply_theme(root, elements):
     # Atualizar progressbar
     style = ttk.Style()
     style.theme_use('default')
-    style.configure("green.Horizontal.TProgressbar", 
+    style.configure("green.Horizontal.TProgressbar",
                     background=theme["PROGRESS_FG"],
                     troughcolor=theme["PROGRESS_BG"],
                     bordercolor=theme["BG"],
@@ -95,10 +95,72 @@ def select_file(entry_widget):
         entry_widget.insert(0, file)
 
 
-# (Funções create_patch e run_thread permanecem inalteradas)
+def create_patch(original_dir, modified_dir, patch_file, log_widget, progress_bar, status_label, button):
+    try:
+        log_message(log_widget, "Iniciando criação do patch...")
+
+        if not os.path.isdir(original_dir) or not os.path.isdir(modified_dir):
+            messagebox.showerror("Erro", "Pastas inválidas.")
+            return
+
+        file_list = os.listdir(modified_dir)
+        total = len(file_list)
+        processed = 0
+        arquivos_gerados = 0
+
+        with open(patch_file, 'wb') as patch_output:
+            for filename in file_list:
+                mod_path = os.path.join(modified_dir, filename)
+                orig_path = os.path.join(original_dir, filename)
+
+                if os.path.isfile(mod_path):
+                    if os.path.exists(orig_path):
+                        with open(orig_path, 'rb') as f_orig, open(mod_path, 'rb') as f_mod:
+                            orig_data = f_orig.read()
+                            mod_data = f_mod.read()
+                            if orig_data != mod_data:
+                                patch_data = bsdiff4.diff(orig_data, mod_data)
+                                compressed = zlib.compress(patch_data)
+                                patch_output.write(len(filename).to_bytes(1, "big"))
+                                patch_output.write(filename.encode("utf-8"))
+                                patch_output.write(len(compressed).to_bytes(4, "big"))
+                                patch_output.write(compressed)
+                                log_message(log_widget, f"Patch delta criado: {filename}")
+                                arquivos_gerados += 1
+                    else:
+                        with open(mod_path, 'rb') as f_mod:
+                            mod_data = f_mod.read()
+                            compressed = zlib.compress(mod_data)
+                            patch_output.write(len(filename).to_bytes(1, "big"))
+                            patch_output.write(filename.encode("utf-8"))
+                            patch_output.write(len(compressed).to_bytes(4, "big"))
+                            patch_output.write(compressed)
+                            log_message(log_widget, f"Arquivo novo incluído: {filename}")
+                            arquivos_gerados += 1
+
+                processed += 1
+                progress = int((processed / total) * 100)
+                progress_bar["value"] = progress
+
+        status_label.config(text=f"{arquivos_gerados} arquivos adicionados ao patch.", fg=themes[current_theme]["FG"])
+        log_message(log_widget, "Patch finalizado com sucesso.")
+    except Exception as e:
+        messagebox.showerror("Erro", f"Ocorreu um erro: {e}")
+        log_message(log_widget, f"Erro: {e}")
+    finally:
+        button.config(state=tk.NORMAL)
 
 
-# Modifique o build_ui() para incluir o botão de alternar tema
+def run_thread(original_dir, modified_dir, patch_file, log_widget, progress_bar, status_label, button):
+    button.config(state=tk.DISABLED)
+    status_label.config(text="Preparando...", fg=themes[current_theme]["FG"])
+    threading.Thread(
+        target=create_patch,
+        args=(original_dir, modified_dir, patch_file, log_widget, progress_bar, status_label, button),
+        daemon=True
+    ).start()
+
+
 def build_ui():
     root = tk.Tk()
     root.title("Criador de Patch")
@@ -146,7 +208,8 @@ def build_ui():
 
     progress_frame = tk.Frame(main_frame)
     progress_frame.grid(row=4, column=0, columnspan=3, pady=5, sticky='we')
-    progress_bar = Progressbar(progress_frame, orient='horizontal', mode='determinate', length=550, style="green.Horizontal.TProgressbar")
+    progress_bar = Progressbar(progress_frame, orient='horizontal', mode='determinate',
+                               length=550, style="green.Horizontal.TProgressbar")
     progress_bar.pack(fill=tk.X, padx=5)
     status_label = tk.Label(progress_frame, text="Aguardando operação...", font=("Arial", 9))
     status_label.pack(pady=3)
@@ -165,11 +228,9 @@ def build_ui():
         "3. Escolha onde salvar o arquivo PATCH\n"
         "4. Clique em 'Criar Patch'\n\n"
         "A PASTA ORIGINAL deve conter os arquivos inalterados\n"
-        "A PASTA MODIFICADA deve conter os arquivos que foram editados, alterados e\\ou modificados\n"
-        "Arquivos adicionados serão incluídos no patch, os alterados serão em DELTA\n"
-        "O processo pode demorar dependendo do\n"
-        "tamanho dos arquivos e quantidade de alterações.")
-    )
+        "A PASTA MODIFICADA deve conter os arquivos que foram editados, alterados e/ou modificados.\n"
+        "Arquivos adicionados serão incluídos no patch, os alterados serão salvos como delta.\n"
+        "O processo pode demorar dependendo do tamanho dos arquivos e da quantidade de alterações."))
     help_btn.pack(side=tk.LEFT, padx=5)
     elements.append(help_btn)
 
@@ -177,9 +238,10 @@ def build_ui():
     toggle_btn.pack(side=tk.LEFT, padx=5)
     elements.append(toggle_btn)
 
-    create_btn.config(command=lambda: run_thread(orig_ent.get(), mod_ent.get(), patch_ent.get(), log, progress_bar, status_label, create_btn))
+    create_btn.config(command=lambda: run_thread(orig_ent.get(), mod_ent.get(), patch_ent.get(),
+                                                 log, progress_bar, status_label, create_btn))
 
-    apply_theme(root, elements)  # Aplica o tema inicial
+    apply_theme(root, elements)
     root.mainloop()
 
 
