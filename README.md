@@ -33,10 +33,8 @@ Clone o repositório:
   
 git clone https://github.com/TicoDoido/instalador_de_patch.git  
 cd instalador_de_patch  
-Adicione seus patches:  
   
-mkdir patchs  
-# Copie seus arquivos data.patch para esta pasta  
+# Copie seu arquivo data.patch para esta pasta  
 Gerando Instalador  
 
 python CRIAR.py  # Cria os arquivos base  
