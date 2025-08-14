@@ -13,7 +13,7 @@ e outra pasta (a mesma) porem com os arquivos que foram alterados
 Arquivos adicionados também serão incluídos no patch  
 Altere o banner.png o icon.ico e os textos dentro do instalador.py  
 para personalizar de acordo com o seu projeto   
-Deixei um modelo que instala patch em xdelta também  
+Deixei um modelo que instala patch em xdelta também...  
   
 📦 Requisitos do Sistema  
 Componente	\ Versão Mínima	Recomendada  
